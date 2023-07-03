@@ -1,6 +1,5 @@
 import base64
 import binascii
-import datetime
 import imghdr
 import os
 
@@ -9,7 +8,7 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from authentication.models import Company, User
+from authentication.models import User
 from authentication.utils import send_registration_mail
 
 
@@ -60,7 +59,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
         allow_blank=True
     )
     email = serializers.EmailField(
-        max_length=20, allow_null=True,
+        max_length=40, allow_null=True,
         allow_blank=True
     )
     firstname = serializers.CharField(
@@ -86,35 +85,36 @@ class UserCreationSerializer(serializers.ModelSerializer):
         fields = ('username', 'email', 'firstname', 'lastname',
                   'about', 'contact_no', 'image')
 
-    def to_internal_value(self, data):
-        if 'email' in data:
-            data['email'] = data['email'].lower()
-        return super().to_internal_value(data)
+    def validate(self, attrs):
+        current_user = self.context['user']
+        attrs['email'] = attrs['email'].lower()
+        attrs['password'] = User.objects.make_random_password()
+        user = User.objects.filter(email=attrs['email']).first()
+        if user:
+            if user.is_active:
+                raise ValidationError(
+                    {'detail': 'User with this email already exists.'}
+                )
+            else:
+                attrs['is_active'] = True
+                attrs['has_changed_password'] = False
+        if current_user.company.is_deleted:
+            raise ValidationError(
+                {'detail': 'Company does not exists.'}
+            )
+        attrs['company'] = current_user.company
+        return attrs
 
     def create(self, validated_data):
-        password = User.objects.make_random_password()
-        validated_data['password'] = password
-        user = User.objects.filter(email=validated_data['email']).first()
-        if user and user.is_active:
-            raise ValidationError(
-                {'detail': 'User with this email already exists.'}
-            )
-        elif user and not user.is_active:
-            user.is_active = True
-            user.has_changed_password = False
-            user.date_joined = datetime.datetime.now()
-            send_registration_mail(user.email, password, )
-        else:
-            validated_data['username'] = validated_data['email'].split('@')[0]
-            user = User.objects.create_user(**validated_data)
-            send_registration_mail(user.email, password, )
-        if 'company_id' in self.context:
-            company = Company.objects.get(id=self.context['company_id'])
-            user.company = company
+        password = validated_data['password']
+        user = super(UserCreationSerializer, self).create(validated_data)
+        send_registration_mail(user.email, password)
         return user
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ('username', 'email', 'firstname', 'lastname',
@@ -122,3 +122,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
                   'is_superuser', 'date_joined', 'last_login', 'company',
                   'is_owner', 'has_changed_password', 'stripe_customer_id',
                   'stripe_subscription_id')
+
+    def get_image(self, obj):
+        return self.context['request'].build_absolute_uri(obj.image.url)

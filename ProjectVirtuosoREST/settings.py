@@ -19,7 +19,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-hbmou52$v=$jox(pxhhg^kuv^b0jt@a2&yb)b=1^*gfvbq^zup'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -78,17 +77,6 @@ WSGI_APPLICATION = 'ProjectVirtuosoREST.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'django_rest_project',
-        'USER': 'admin',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -142,6 +130,8 @@ AUTH_USERNAME_FIELD = 'email'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -152,7 +142,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.FormParser',
-        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.MultiPartParser'
         'rest_framework.parsers.JSONParser',
     ),
     'DEFAULT_FILTER_BACKENDS': (
@@ -174,9 +164,7 @@ SWAGGER_SETTINGS = {
     },
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'fantasticsingh99@gmail.com'
-EMAIL_HOST_PASSWORD = 'zmadxyepxibthlpb'
+try:
+    from .local import *
+except ImportError:
+    pass

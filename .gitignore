@@ -181,7 +181,7 @@ cython_debug/
 *.sublime-project
 
 # Credentials #
-django_assignment/local.py
+ProjectVirtuosoREST/local.py
 
 # Media Files #
 media/
