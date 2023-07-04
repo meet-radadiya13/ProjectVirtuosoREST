@@ -1,35 +1,27 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.authtoken.admin import User
 
-from authentication.models import User
-from authentication.serializers import UserCreationSerializer
 from projects.models import Project
-
-
-class ProjectUserSerializer(UserCreationSerializer):
-    class Meta:
-        model = UserCreationSerializer.Meta.model
-        fields = ('id',)
 
 
 class ProjectCreationSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
-        max_length=100, allow_null=True,
-        allow_blank=True
+        max_length=100, allow_null=False,
+        allow_blank=False
     )
     acronym = serializers.CharField(
-        max_length=3, allow_null=True,
-        allow_blank=True
+        max_length=3, allow_null=False,
+        allow_blank=False
     )
-    assign = ProjectUserSerializer(
-        allow_null=True,
+    assign = serializers.PrimaryKeyRelatedField(
+        allow_null=True, many=True, queryset=User.objects.all()
     )
     is_completed = serializers.BooleanField(
-        allow_null=True,
+        default=False,
     )
-    dead_line = serializers.DateField(allow_null=True, )
+    dead_line = serializers.DateTimeField(allow_null=True, )
     description = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=True
+        max_length=500, allow_null=False, allow_blank=False
     )
     tags = serializers.ListField(
         child=serializers.CharField()
@@ -41,33 +33,31 @@ class ProjectCreationSerializer(serializers.ModelSerializer):
             'name', 'acronym', 'assign', 'is_completed', 'dead_line',
             'description', 'tags',)
 
-        def validate(self, attrs):
-            username = attrs.get('username')
-            if username and username != self.instance.username:
-                if User.objects.filter(
-                        username=username
-                ).exclude(
-                    id=self.instance.id
-                ).exists():
-                    raise ValidationError({"detail": "username is taken"})
-                attrs["username"] = username
-            return attrs
+    def validate(self, attrs):
+        current_user = self.context['user']
+        assign = attrs['assign']
+        for user in assign:
+            if user.company != current_user.company:
+                raise serializers.ValidationError(
+                    'You can not assign project to this user.'
+                )
+            return super().validate(attrs)
 
 
 class ProjectUpdateSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
-        max_length=100, allow_null=True,
-        allow_blank=True
+        max_length=100, allow_null=False,
+        allow_blank=False
     )
     acronym = serializers.CharField(
-        max_length=3, allow_null=True,
-        allow_blank=True
+        max_length=3, allow_null=False,
+        allow_blank=False
     )
     is_completed = serializers.BooleanField(
-        allow_null=True,
+        default=False,
     )
     description = serializers.CharField(
-        max_length=500, allow_null=True, allow_blank=True
+        max_length=500, allow_null=False, allow_blank=False
     )
 
     class Meta:

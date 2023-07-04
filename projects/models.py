@@ -9,7 +9,10 @@ from authentication.models import User
 class Project(CommonModel):
     name = models.CharField(max_length=100, blank=True, null=True)
     acronym = models.CharField(max_length=3, blank=True, null=True)
-    assign = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    assign = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True,
+        related_name='project_assign'
+    )
     is_completed = models.BooleanField(default=False)
     dead_line = models.DateField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)

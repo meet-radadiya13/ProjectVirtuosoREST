@@ -55,28 +55,28 @@ class Base64ImageField(serializers.ImageField):
 
 class UserCreationSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=20, allow_null=True,
-        allow_blank=True
+        max_length=20, allow_null=False,
+        allow_blank=False,
     )
     email = serializers.EmailField(
-        max_length=40, allow_null=True,
-        allow_blank=True
+        max_length=40, allow_null=False,
+        allow_blank=False,
     )
     firstname = serializers.CharField(
-        max_length=20, allow_null=True,
-        allow_blank=True
+        max_length=20, allow_null=False,
+        allow_blank=False,
     )
     lastname = serializers.CharField(
-        max_length=20, allow_null=True,
-        allow_blank=True
+        max_length=20, allow_null=False,
+        allow_blank=False,
     )
     about = serializers.CharField(
-        max_length=20, allow_null=True,
-        allow_blank=True
+        max_length=20, allow_null=False,
+        allow_blank=False,
     )
-    contact_no = serializers.CharField(
-        max_length=20, allow_null=True,
-        allow_blank=True
+    contact_no = serializers.RegexField(
+        regex=r'^(\+\d{1,3})?,?\s?\d{8,13}',
+        required=True
     )
     image = Base64ImageField(allow_null=True, )
 

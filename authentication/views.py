@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from authentication.models import User
+from authentication.permissions import IsCompanyOwner
 from authentication.serializers import UserCreationSerializer, \
     UserDetailSerializer
 from projects.models import Project
@@ -27,6 +28,15 @@ class UserViewSet(ModelViewSet):
             return UserDetailSerializer
         else:
             return UserDetailSerializer
+
+    def get_permissions(self):
+        if self.action == 'create' or \
+                self.action == 'partial_update':
+            return [IsAuthenticated, IsCompanyOwner]
+        elif self.action == 'list' or self.action == 'retrieve':
+            return [IsAuthenticated, ]
+        else:
+            return [IsAuthenticated, ]
 
     def get_queryset(self):
         queryset = User.objects.exclude(is_active=False)

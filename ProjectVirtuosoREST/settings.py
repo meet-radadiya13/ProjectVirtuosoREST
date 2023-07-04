@@ -155,7 +155,7 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
-    # 'JSON_EDITOR': True,
+    'JSON_EDITOR': True,
     'SECURITY_DEFINITIONS': {
         'api_key': {
             'type': 'apiKey',
