@@ -1,0 +1,4 @@
+Django~=4.2.2
+djangorestframework~=3.14.0
+django-filter~=23.2
+six~=1.16.0
