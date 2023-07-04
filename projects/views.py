@@ -7,13 +7,14 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from projects.models import Project
+from projects.permissions import IsProjectOwner
 from projects.serializers import ProjectCreationSerializer, \
     ProjectDetailSerializer, ProjectUpdateSerializer
 
 
 # Create your views here.
 class ProjectViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsProjectOwner)
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['name', ]
 
@@ -53,10 +54,15 @@ class ProjectViewSet(ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = ProjectUpdateSerializer(instance, data=request.data)
+        serializer = ProjectUpdateSerializer(
+            instance, data=request.data, context={'user': request.user}
+        )
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            project = serializer.save()
+            return Response(
+                ProjectDetailSerializer(project).data,
+                status=status.HTTP_201_CREATED
+            )
         else:
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
@@ -65,11 +71,14 @@ class ProjectViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = ProjectUpdateSerializer(
-            instance, data=request.data, partial=True
+            instance, data=request.data, partial=True,
         )
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            project = serializer.save()
+            return Response(
+                ProjectDetailSerializer(project).data,
+                status=status.HTTP_201_CREATED
+            )
         else:
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST

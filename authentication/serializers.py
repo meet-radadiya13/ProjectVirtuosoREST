@@ -117,7 +117,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'firstname', 'lastname',
+        fields = ('id', 'username', 'email', 'firstname', 'lastname',
                   'about', 'contact_no', 'image', 'is_active', 'is_staff',
                   'is_superuser', 'date_joined', 'last_login', 'company',
                   'is_owner', 'has_changed_password', 'stripe_customer_id',

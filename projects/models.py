@@ -14,7 +14,7 @@ class Project(CommonModel):
         related_name='project_assign'
     )
     is_completed = models.BooleanField(default=False)
-    dead_line = models.DateField(blank=True, null=True)
+    dead_line = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     tags = ArrayField(models.CharField(max_length=200), blank=True)
     created_by = models.ForeignKey(

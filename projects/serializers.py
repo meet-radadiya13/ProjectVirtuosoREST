@@ -41,7 +41,8 @@ class ProjectCreationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'You can not assign project to this user.'
                 )
-            return super().validate(attrs)
+        attrs['created_by'] = current_user
+        return super().validate(attrs)
 
 
 class ProjectUpdateSerializer(serializers.ModelSerializer):
@@ -63,6 +64,11 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ('name', 'acronym', 'is_completed', 'description')
+
+    def update(self, instance, validated_data):
+        current_user = self.context['user']
+        validated_data['updated_by'] = current_user
+        return super().update(instance, validated_data)
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
