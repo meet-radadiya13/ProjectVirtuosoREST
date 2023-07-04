@@ -16,7 +16,7 @@ from projects.serializers import ProjectDetailSerializer
 
 
 class UserViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsCompanyOwner)
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['company']
 
@@ -28,15 +28,6 @@ class UserViewSet(ModelViewSet):
             return UserDetailSerializer
         else:
             return UserDetailSerializer
-
-    def get_permissions(self):
-        if self.action == 'create' or \
-                self.action == 'partial_update':
-            return [IsAuthenticated, IsCompanyOwner]
-        elif self.action == 'list' or self.action == 'retrieve':
-            return [IsAuthenticated, ]
-        else:
-            return [IsAuthenticated, ]
 
     def get_queryset(self):
         queryset = User.objects.exclude(is_active=False)
