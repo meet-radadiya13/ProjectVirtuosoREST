@@ -21,7 +21,7 @@ class ProjectViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return ProjectCreationSerializer
-        elif self.action == 'update' or self.action == 'partial_update':
+        elif self.action == 'partial_update':
             return ProjectUpdateSerializer
         elif self.action == 'list' or self.action == 'retrieve':
             return ProjectDetailSerializer
@@ -41,7 +41,7 @@ class ProjectViewSet(ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        serializer = ProjectCreationSerializer(
+        serializer = self.get_serializer(
             data=request.data, context={'user': request.user}
         )
         if serializer.is_valid():
@@ -52,26 +52,11 @@ class ProjectViewSet(ModelViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = ProjectUpdateSerializer(
-            instance, data=request.data, context={'user': request.user}
-        )
-        if serializer.is_valid():
-            project = serializer.save()
-            return Response(
-                ProjectDetailSerializer(project).data,
-                status=status.HTTP_201_CREATED
-            )
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
-
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = ProjectUpdateSerializer(
-            instance, data=request.data, partial=True,
+        serializer = self.get_serializer(
+            instance, data=request.data,
+            partial=True
         )
         if serializer.is_valid():
             project = serializer.save()

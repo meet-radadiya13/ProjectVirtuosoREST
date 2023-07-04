@@ -51,17 +51,6 @@ class UserViewSet(ModelViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = UserCreationSerializer(instance, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
-
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = UserCreationSerializer(

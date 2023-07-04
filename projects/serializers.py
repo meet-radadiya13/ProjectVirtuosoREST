@@ -14,7 +14,8 @@ class ProjectCreationSerializer(serializers.ModelSerializer):
         allow_blank=False
     )
     assign = serializers.PrimaryKeyRelatedField(
-        allow_null=True, many=True, queryset=User.objects.all()
+        allow_null=True, many=True,
+        queryset=User.objects.exclude(is_active=False)
     )
     is_completed = serializers.BooleanField(
         default=False,
@@ -42,16 +43,12 @@ class ProjectCreationSerializer(serializers.ModelSerializer):
                     'You can not assign project to this user.'
                 )
         attrs['created_by'] = current_user
-        return super().validate(attrs)
+        return attrs
 
 
 class ProjectUpdateSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         max_length=100, allow_null=False,
-        allow_blank=False
-    )
-    acronym = serializers.CharField(
-        max_length=3, allow_null=False,
         allow_blank=False
     )
     is_completed = serializers.BooleanField(
@@ -63,12 +60,15 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('name', 'acronym', 'is_completed', 'description')
+        fields = ('name', 'is_completed', 'description')
 
     def update(self, instance, validated_data):
         current_user = self.context['user']
         validated_data['updated_by'] = current_user
-        return super().update(instance, validated_data)
+        return super(ProjectUpdateSerializer, self).update(
+            instance,
+            validated_data
+        )
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
