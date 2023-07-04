@@ -17,6 +17,7 @@ class ProjectViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated, IsProjectOwner)
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['name', ]
+    search_fields = ['name']
 
     def get_serializer_class(self):
         if self.action == 'create':

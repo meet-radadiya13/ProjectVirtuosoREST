@@ -19,6 +19,7 @@ class UserViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated, IsCompanyOwner)
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['company']
+    search_fields = ['first_name', 'last_name', 'username']
 
     def get_serializer_class(self):
         if self.action == 'create' or \
@@ -38,7 +39,7 @@ class UserViewSet(ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        serializer = UserCreationSerializer(
+        serializer = self.get_serializer(
             data=request.data, context={'user': request.user}
         )
         if serializer.is_valid():
@@ -53,7 +54,7 @@ class UserViewSet(ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = UserCreationSerializer(
+        serializer = self.get_serializer(
             instance, data=request.data, partial=True
         )
         if serializer.is_valid():

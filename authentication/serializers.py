@@ -4,6 +4,7 @@ import imghdr
 import os
 
 import six
+from django.contrib.auth.hashers import make_password
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -107,6 +108,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data['password']
+        validated_data['password'] = make_password(password)
         user = super(UserCreationSerializer, self).create(validated_data)
         send_registration_mail(user.email, password)
         return user
