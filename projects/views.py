@@ -14,6 +14,7 @@ from projects.serializers import ProjectCreationSerializer, \
 
 # Create your views here.
 class ProjectViewSet(ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete', ]
     permission_classes = (IsAuthenticated, IsProjectOwner)
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['name', ]

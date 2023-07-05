@@ -16,6 +16,7 @@ from projects.serializers import ProjectDetailSerializer
 
 
 class UserViewSet(ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete', ]
     permission_classes = (IsAuthenticated, IsCompanyOwner)
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['company']
