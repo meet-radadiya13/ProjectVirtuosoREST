@@ -49,11 +49,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     is_owner = models.BooleanField(default=False)
     has_changed_password = models.BooleanField(default=False)
-    stripe_customer_id = models.CharField(
-        max_length=255, null=True, blank=True
+    otp = models.CharField(
+        max_length=6, null=True, blank=True
     )
-    stripe_subscription_id = models.CharField(
-        max_length=255, null=True,
+    otp_created = models.DateTimeField(
+        null=True,
         blank=True
     )
 

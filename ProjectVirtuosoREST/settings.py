@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'authentication',
     'projects',
+    'django_celery_beat',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [

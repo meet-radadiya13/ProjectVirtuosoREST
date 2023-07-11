@@ -79,7 +79,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
         regex=r'^(\+\d{1,3})?,?\s?\d{8,13}',
         required=True
     )
-    image = Base64ImageField(allow_null=True, )
+    image = Base64ImageField(allow_null=True, required=False)
 
     class Meta:
         model = User
@@ -122,8 +122,34 @@ class UserDetailSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'firstname', 'lastname',
                   'about', 'contact_no', 'image', 'is_active', 'is_staff',
                   'is_superuser', 'date_joined', 'last_login', 'company',
-                  'is_owner', 'has_changed_password', 'stripe_customer_id',
-                  'stripe_subscription_id')
+                  'is_owner', 'has_changed_password',)
 
     def get_image(self, obj):
         return self.context['request'].build_absolute_uri(obj.image.url)
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        max_length=40, allow_null=False,
+        allow_blank=False, required=True,
+    )
+    password = serializers.CharField(
+        max_length=20, allow_null=False,
+        allow_blank=False, required=True,
+    )
+
+    class Meta:
+        fields = ('email', 'password',)
+
+
+class OTPVerificationSerializer(serializers.Serializer):
+    otp = serializers.CharField(
+        max_length=6, allow_null=False,
+        allow_blank=False, required=True,
+    )
+    token = serializers.CharField(
+        allow_null=False,
+        allow_blank=False, required=True, )
+
+    class Meta:
+        fields = ('otp', 'token',)

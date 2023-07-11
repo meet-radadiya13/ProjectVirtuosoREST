@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from projects.filters import ProjectFilter
 from projects.models import Project
 from projects.permissions import IsProjectOwner
 from projects.serializers import ProjectCreationSerializer, \
@@ -17,7 +18,8 @@ class ProjectViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', ]
     permission_classes = (IsAuthenticated, IsProjectOwner)
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['name', ]
+    filterset_fields = ['name', 'tags']
+    filterset_class = ProjectFilter
     search_fields = ['name']
 
     def get_serializer_class(self):

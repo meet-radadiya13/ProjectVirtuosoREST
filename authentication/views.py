@@ -1,16 +1,22 @@
 # Create your views here.
+import jwt
+from django.contrib.auth import authenticate
 from django.db.models import Case, Count, Q, When
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from authentication.models import User
 from authentication.permissions import IsCompanyOwner
-from authentication.serializers import UserCreationSerializer, \
+from authentication.serializers import LoginSerializer, \
+    OTPVerificationSerializer, UserCreationSerializer, \
     UserDetailSerializer
+from authentication.utils import generate_otp, verify_otp
 from projects.models import Project
 from projects.serializers import ProjectDetailSerializer
 
@@ -149,3 +155,76 @@ class RenderHomeView(GenericAPIView):
                 many=True, context={'request': request}
             ).data
         return Response(context, status=status.HTTP_200_OK)
+
+
+class LoginView(GenericAPIView):
+    authentication_classes = ()
+    permission_classes = ()
+    serializer_class = LoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            send_otp = generate_otp(request.user.id)
+            if send_otp:
+                return Response(
+                    {'success': 'Enter the OTP sent to your '
+                                'email address.'},
+                    status=status.HTTP_200_OK
+                )
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+        if serializer.is_valid():
+            email = serializer.data.get('email')
+            password = serializer.data.get('password')
+            user = authenticate(email=email, password=password)
+            if user is not None:
+                send_otp = generate_otp(user.id)
+                if send_otp:
+                    refresh = RefreshToken.for_user(user)
+                    token = str(refresh.access_token)
+                    return Response(
+                        {'Token': token},
+                        status=status.HTTP_200_OK
+                    )
+                else:
+                    return Response(
+                        {'error': 'Invalid username or password', },
+                        status=status.HTTP_401_UNAUTHORIZED
+                    )
+        return Response(
+            {'error': 'Invalid username or password', },
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+
+class OTPVerifyView(GenericAPIView):
+    authentication_classes = ()
+    permission_classes = ()
+    serializer_class = OTPVerificationSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data, )
+        if serializer.is_valid():
+            otp = serializer.data.get('otp')
+            token = serializer.data.get('token')
+            if otp:
+                user_id = \
+                    jwt.decode(token, options={'verify_signature': False})[
+                        'user_id']
+                if verify_otp(user_id, otp):
+                    auth_token = Token.objects.get_or_create(user_id=user_id)
+                    return Response(
+                        {'auth_token': auth_token},
+                        status=status.HTTP_200_OK
+                    )
+                else:
+                    return Response(
+                        {'error': 'Invalid OTP.'},
+                        status=status.HTTP_401_UNAUTHORIZED
+                    )
+        return Response(
+            {'error': 'Invalid OTP.'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
