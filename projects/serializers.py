@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.authtoken.admin import User
 
-from projects.models import Project
+from projects.models import AuditHistory, Project
 
 
 class ProjectCreationSerializer(serializers.ModelSerializer):
@@ -78,3 +78,11 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'id', 'name', 'acronym', 'assign', 'is_completed', 'dead_line',
             'description', 'tags', 'created_at', 'updated_at', 'created_by',
             'updated_by',)
+
+
+class AuditHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AuditHistory
+        fields = (
+            'id', 'task', 'project', 'action', 'action_by', 'user_from',
+            'user_to', 'created_at', 'updated_at', 'is_deleted',)

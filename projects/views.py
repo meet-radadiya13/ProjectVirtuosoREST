@@ -7,9 +7,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from projects.filters import ProjectFilter
-from projects.models import Project
+from projects.models import AuditHistory, Project
 from projects.permissions import IsProjectOwner
-from projects.serializers import ProjectCreationSerializer, \
+from projects.serializers import AuditHistorySerializer, \
+    ProjectCreationSerializer, \
     ProjectDetailSerializer, ProjectUpdateSerializer
 
 
@@ -82,3 +83,15 @@ class ProjectViewSet(ModelViewSet):
     @action(detail=False, methods=['get'])
     def count_projects(self, request, *args, **kwargs):
         return Response({'count': Project.objects.count()})
+
+
+class AuditHistoryViewSet(ModelViewSet):
+    http_method_names = ['get', ]
+    permission_classes = (IsAuthenticated,)
+    serializer_class = AuditHistorySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['task', ]
+
+    def get_queryset(self):
+        queryset = AuditHistory.objects.all()
+        return queryset
