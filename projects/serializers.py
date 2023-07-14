@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.authtoken.admin import User
 
@@ -72,6 +73,23 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
+    updated_at = serializers.SerializerMethodField()
+
+    def get_created_at(self, obj):
+        if isinstance(self.context.get('offset'), float):
+            offset = float(self.context.get('offset'))
+            created_at = obj.created_at + timezone.timedelta(minutes=offset)
+            return created_at.strftime("%Y-%m-%d %H:%M:%S")
+        return obj.created_at
+
+    def get_updated_at(self, obj):
+        if isinstance(self.context.get('offset'), float):
+            offset = float(self.context.get('offset'))
+            updated_at = obj.updated_at + timezone.timedelta(minutes=offset)
+            return updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        return obj.updated_at
+
     class Meta:
         model = Project
         fields = (
@@ -81,6 +99,23 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
 
 class AuditHistorySerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
+    updated_at = serializers.SerializerMethodField()
+
+    def get_created_at(self, obj):
+        if self.context.get('offset').isinstance(float):
+            offset = float(self.context.get('offset'))
+            created_at = obj.created_at + timezone.timedelta(minutes=offset)
+            return created_at.strftime("%Y-%m-%d %H:%M:%S")
+        return obj.created_at
+
+    def get_updated_at(self, obj):
+        if self.context.get('offset').isinstance(float):
+            offset = float(self.context.get('offset'))
+            updated_at = obj.updated_at + timezone.timedelta(minutes=offset)
+            return updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        return obj.updated_at
+
     class Meta:
         model = AuditHistory
         fields = (
